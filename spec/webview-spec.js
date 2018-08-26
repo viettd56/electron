@@ -219,6 +219,41 @@ describe('<webview> tag', function () {
     })
   })
 
+  describe('disableremotemodule attribute', () => {
+    const generateSpecs = (description, sandbox) => {
+      describe(description, () => {
+        const preload = `${fixtures}/module/preload-disable-remote.js`
+        const src = `file://${fixtures}/api/blank.html`
+
+        it('disables the remote module when set', async () => {
+          const message = await startLoadingWebViewAndWaitForMessage(webview, {
+            preload,
+            src,
+            sandbox,
+            disableremotemodule: true
+          })
+
+          const typeOfRemote = JSON.parse(message)
+          expect(typeOfRemote).to.equal('undefined')
+        })
+
+        it('enables the remote module when not set', async () => {
+          const message = await startLoadingWebViewAndWaitForMessage(webview, {
+            preload,
+            src,
+            sandbox
+          })
+
+          const typeOfRemote = JSON.parse(message)
+          expect(typeOfRemote).to.equal('object')
+        })
+      })
+    }
+
+    generateSpecs('without sandbox', false)
+    generateSpecs('with sandbox', true)
+  })
+
   describe('preload attribute', () => {
     it('loads the script before other scripts in window', async () => {
       const message = await startLoadingWebViewAndWaitForMessage(webview, {
@@ -504,6 +539,17 @@ describe('<webview> tag', function () {
         module: 'object',
         process: 'object'
       })
+    })
+
+    it('can disable the remote module', async () => {
+      const message = await startLoadingWebViewAndWaitForMessage(webview, {
+        preload: `${fixtures}/module/preload-disable-remote.js`,
+        src: `file://${fixtures}/api/blank.html`,
+        webpreferences: 'enableRemoteModule=no'
+      })
+
+      const typeOfRemote = JSON.parse(message)
+      expect(typeOfRemote).to.equal('undefined')
     })
 
     it('can disables web security and enable nodeintegration', async () => {

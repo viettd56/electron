@@ -39,7 +39,13 @@ describe('crashReporter module', () => {
 
       beforeEach(() => {
         stopServer = null
-        w = new BrowserWindow(Object.assign({ show: false }, browserWindowOpts))
+        w = new BrowserWindow({
+          show: false,
+          webPreferences: {
+            enableRemoteModule: false
+          },
+          ...browserWindowOpts
+        })
       })
 
       afterEach(() => closeWindow(w).then(() => { w = null }))
