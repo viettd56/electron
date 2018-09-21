@@ -1,6 +1,6 @@
 vars = {
   'chromium_version':
-    '68.0.3440.128',
+    '69.0.3497.106',
   'node_version':
     '18a9880b70039f5d41ee860a95fe84e5ef928973',
 
