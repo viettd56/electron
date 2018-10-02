@@ -120,7 +120,7 @@ class AtomBrowserMainParts : public brightray::BrowserMainParts {
   std::unique_ptr<IOThread> io_thread_;
   std::unique_ptr<net_log::ChromeNetLog> net_log_;
 
-  base::Timer gc_timer_;
+  base::RepeatingTimer gc_timer_;
 
   // List of callbacks should be executed before destroying JS env.
   std::list<base::OnceClosure> destructors_;
