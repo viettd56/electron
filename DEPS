@@ -1,3 +1,13 @@
+gclient_gn_args_file = 'src/build/config/gclient_args.gni'
+gclient_gn_args = [
+  'build_with_chromium',
+  'checkout_android',
+  'checkout_android_native_support',
+  'checkout_libaom',
+  'checkout_nacl',
+  'checkout_oculus_sdk'
+]
+
 vars = {
   'chromium_version':
     '69.0.3497.106',
@@ -21,6 +31,12 @@ vars = {
   'checkout_libaom':
     True,
   'checkout_oculus_sdk':
+    False,
+  'build_with_chromium':
+    True,
+  'checkout_android':
+    False,
+  'checkout_android_native_support':
     False,
 }
 
@@ -98,10 +114,3 @@ recursedeps = [
   'src',
   'src/libchromiumcontent',
 ]
-
-gclient_gn_args = [
-  'checkout_libaom',
-  'checkout_nacl',
-  'checkout_oculus_sdk'
-]
-gclient_gn_args_file =  'src/build/config/gclient_args.gni'
