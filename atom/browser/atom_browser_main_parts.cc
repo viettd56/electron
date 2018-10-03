@@ -259,6 +259,11 @@ bool AtomBrowserMainParts::MainMessageLoopRun(int* result_code) {
   return brightray::BrowserMainParts::MainMessageLoopRun(result_code);
 }
 
+void AtomBrowserMainParts::PreDefaultMainMessageLoopRun(
+    base::OnceClosure quit_closure) {
+  Browser::SetMainMessageLoopQuitClosure(std::move(quit_closure));
+}
+
 void AtomBrowserMainParts::PostMainMessageLoopStart() {
   brightray::BrowserMainParts::PostMainMessageLoopStart();
 #if defined(OS_POSIX)
