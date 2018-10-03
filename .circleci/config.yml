@@ -65,6 +65,9 @@ env-enable-sccache: &env-enable-sccache
 env-send-slack-notifications: &env-send-slack-notifications
   NOTIFY_SLACK: true
 
+env-asan: &env-asan
+  GN_SANITIZERS: 'is_asan = true'
+
 # Individual (shared) steps.
 step-maybe-notify-slack-failure: &step-maybe-notify-slack-failure
   run:
@@ -142,7 +145,7 @@ step-electron-gn-gen: &step-electron-gn-gen
     name: Electron GN gen
     command: |
       cd src
-      gn gen out/Default --args='import("'$GN_CONFIG'") cc_wrapper="'"$SCCACHE_PATH"'"'" $GN_EXTRA_ARGS"
+      gn gen out/Default --args='import("'$GN_CONFIG'") cc_wrapper="'"$SCCACHE_PATH"'"'" $GN_EXTRA_ARGS $GN_SANITIZERS"
 
 step-electron-build: &step-electron-build
   run:
@@ -221,7 +224,7 @@ step-ffmpeg-gn-gen: &step-ffmpeg-gn-gen
     name: ffmpeg GN gen
     command: |
       cd src
-      gn gen out/ffmpeg --args='import("//electron/build/args/ffmpeg.gn") cc_wrapper="'"$SCCACHE_PATH"'"'" $GN_EXTRA_ARGS"
+      gn gen out/ffmpeg --args='import("//electron/build/args/ffmpeg.gn") cc_wrapper="'"$SCCACHE_PATH"'"'" $GN_EXTRA_ARGS $GN_SANITIZERS"
 
 step-ffmpeg-build: &step-ffmpeg-build
   run:
@@ -291,7 +294,7 @@ step-maybe-native-mksnapshot-gn-gen: &step-maybe-native-mksnapshot-gn-gen
     command: |
       if [ "$BUILD_NATIVE_MKSNAPSHOT" == "1" ]; then
         cd src
-        gn gen out/native_mksnapshot --args='import("//electron/build/args/native_mksnapshot.gn") cc_wrapper="'"$SCCACHE_PATH"'" v8_snapshot_toolchain="'"$MKSNAPSHOT_TOOLCHAIN"'"'" $GN_EXTRA_ARGS"
+        gn gen out/native_mksnapshot --args='import("//electron/build/args/native_mksnapshot.gn") cc_wrapper="'"$SCCACHE_PATH"'" v8_snapshot_toolchain="'"$MKSNAPSHOT_TOOLCHAIN"'"'" $GN_EXTRA_ARGS $GN_SANITIZERS"
       else
         echo 'Skipping native mksnapshot GN gen for non arm build'
       fi
@@ -617,6 +620,15 @@ jobs:
       <<: *env-enable-sccache
     <<: *steps-electron-build-for-tests
 
+  # XXX: testing only, normally asan would only be run against release
+  linux-x64-testing-asan:
+    <<: *machine-linux-2xlarge
+    environment:
+      <<: *env-testing-build
+      <<: *env-enable-sccache
+      <<: *env-asan
+    <<: *steps-electron-build-for-tests
+
   linux-x64-ffmpeg:
     <<: *machine-linux-medium
     environment:
@@ -812,6 +824,12 @@ jobs:
     <<: *machine-linux-medium
     <<: *steps-tests
 
+  linux-x64-release-tests-asan:
+    <<: *machine-linux-medium
+    environment:
+      <<: *env-asan
+    <<: *steps-tests
+
   linux-x64-release-verify-ffmpeg:
     <<: *machine-linux-medium
     <<: *steps-verify-ffmpeg
@@ -834,6 +852,13 @@ jobs:
       <<: *env-ia32
     <<: *steps-tests
 
+  linux-ia32-release-tests-asan:
+    <<: *machine-linux-medium
+    environment:
+      <<: *env-ia32
+      <<: *env-asan
+    <<: *steps-tests
+
   linux-ia32-release-verify-ffmpeg:
     <<: *machine-linux-medium
     environment:
@@ -854,65 +879,71 @@ workflows:
     jobs:
       - linux-checkout
 
-      - linux-x64-debug:
+#      - linux-x64-debug:
+#          requires:
+#            - linux-checkout
+      - linux-x64-testing-asan:
           requires:
             - linux-checkout
-      - linux-x64-testing:
-          requires:
-            - linux-checkout
-      - linux-x64-testing-tests:
-          requires:
-            - linux-x64-testing
-      - linux-x64-ffmpeg:
-          requires:
-            - linux-checkout
-      - linux-x64-testing-verify-ffmpeg:
-          requires:
-            - linux-x64-testing
-            - linux-x64-ffmpeg
+#      - linux-x64-testing-tests:
+#          requires:
+#            - linux-x64-testing
+#      - linux-x64-ffmpeg:
+#          requires:
+#            - linux-checkout
+#      - linux-x64-testing-verify-ffmpeg:
+#          requires:
+#            - linux-x64-testing
+#            - linux-x64-ffmpeg
 
-      - linux-ia32-debug:
+      # XXX: for testing this PR only, ordinarily we'd only run asan on
+      # nightlies.
+      - linux-x64-release-tests-asan:
           requires:
-            - linux-checkout
-      - linux-ia32-testing:
-          requires:
-            - linux-checkout
-      - linux-ia32-testing-tests:
-          requires:
-            - linux-ia32-testing
-      - linux-ia32-ffmpeg:
-          requires:
-            - linux-checkout
-      - linux-ia32-testing-verify-ffmpeg:
-          requires:
-            - linux-ia32-testing
-            - linux-ia32-ffmpeg
+            - linux-x64-testing-asan
 
-      - linux-arm-debug:
-          requires:
-            - linux-checkout
-      - linux-arm-testing:
-          requires:
-            - linux-checkout
-      - linux-arm-ffmpeg:
-           requires:
-             - linux-checkout
-      - linux-arm-native-mksnapshot:
-          requires:
-            - linux-checkout
-
-      - linux-arm64-debug:
-          requires:
-            - linux-checkout
-      - linux-arm64-testing:
-          requires:
-            - linux-checkout
-      - linux-arm64-ffmpeg:
-           requires:
-             - linux-checkout
-      - linux-arm64-native-mksnapshot:
-          requires:
-            - linux-checkout
+#      - linux-ia32-debug:
+#          requires:
+#            - linux-checkout
+#      - linux-ia32-testing:
+#          requires:
+#            - linux-checkout
+#      - linux-ia32-testing-tests:
+#          requires:
+#            - linux-ia32-testing
+#      - linux-ia32-ffmpeg:
+#          requires:
+#            - linux-checkout
+#      - linux-ia32-testing-verify-ffmpeg:
+#          requires:
+#            - linux-ia32-testing
+#            - linux-ia32-ffmpeg
+#
+#      - linux-arm-debug:
+#          requires:
+#            - linux-checkout
+#      - linux-arm-testing:
+#          requires:
+#            - linux-checkout
+#      - linux-arm-ffmpeg:
+#           requires:
+#             - linux-checkout
+#      - linux-arm-native-mksnapshot:
+#          requires:
+#            - linux-checkout
+#
+#      - linux-arm64-debug:
+#          requires:
+#            - linux-checkout
+#      - linux-arm64-testing:
+#          requires:
+#            - linux-checkout
+#      - linux-arm64-ffmpeg:
+#           requires:
+#             - linux-checkout
+#      - linux-arm64-native-mksnapshot:
+#          requires:
+#            - linux-checkout
 
   build-mac-fork-prs:
     jobs:
@@ -958,6 +989,9 @@ workflows:
       - linux-x64-release-tests:
           requires:
             - linux-x64-release
+      - linux-x64-release-tests-asan:
+          requires:
+            - linux-x64-release
       - linux-x64-ffmpeg:
           requires:
             - linux-checkout
@@ -970,6 +1004,9 @@ workflows:
           requires:
             - linux-checkout
       - linux-ia32-release-tests:
+          requires:
+            - linux-ia32-release
+      - linux-ia32-release-tests-asan:
           requires:
             - linux-ia32-release
       - linux-ia32-ffmpeg:
