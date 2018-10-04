@@ -315,7 +315,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     return nullptr;
 
   if (!url_request_context_) {
-    auto& command_line = *base::CommandLine::ForCurrentProcess();
+    //auto& command_line = *base::CommandLine::ForCurrentProcess();
     std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
         std::make_unique<network::URLRequestContextBuilderMojo>();
     builder->set_network_delegate(std::make_unique<AtomNetworkDelegate>());
@@ -327,6 +327,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     builder->SetCreateHttpTransactionFactoryCallback(
         base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
 
+    /*
     std::unique_ptr<net::HostResolver> host_resolver =
         net::HostResolver::CreateDefaultResolver(net_log_);
     // --host-resolver-rules
@@ -356,6 +357,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
                                                       &auth_preferences);
     builder->SetHttpAuthHandlerFactory(std::move(http_auth_handler_factory));
     builder->set_host_resolver(std::move(host_resolver));
+    */
     builder->set_ct_verifier(std::make_unique<net::MultiLogCTVerifier>());
 
     network_context_ =
