@@ -315,7 +315,7 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     return nullptr;
 
   if (!url_request_context_) {
-    //auto& command_line = *base::CommandLine::ForCurrentProcess();
+    // auto& command_line = *base::CommandLine::ForCurrentProcess();
     std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
         std::make_unique<network::URLRequestContextBuilderMojo>();
     builder->set_network_delegate(std::make_unique<AtomNetworkDelegate>());
