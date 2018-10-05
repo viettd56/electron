@@ -32,6 +32,7 @@ def strip_binary(binary_path, target_cpu):
 
 def main():
   args = parse_args()
+  print args
   if args.file:
     strip_binary(args.file, args.target_cpu)
   else:
@@ -39,13 +40,12 @@ def main():
 
 def parse_args():
   parser = argparse.ArgumentParser(description='Strip linux binaries')
-  parser.add_argument('-d', '--dir',
+  parser.add_argument('-d', '--directory',
                       help='Path to the dir that contains files to strip.',
                       default=get_out_dir(),
                       required=False)
   parser.add_argument('-f', '--file',
                       help='Path to a specific file to strip.',
-                      default=get_out_dir(),
                       required=False)
   parser.add_argument('-v', '--verbose',
                       action='store_true',

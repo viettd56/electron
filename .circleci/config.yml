@@ -154,7 +154,7 @@ step-electron-dist-strip: &step-electron-dist-strip
     name: Strip electron binaries
     command: |
       cd src
-      electron/script/strip-binaries.py --target-cpu $TARGET_ARCH
+      electron/script/strip-binaries.py --target-cpu="$TARGET_ARCH"
 
 step-electron-dist-build: &step-electron-dist-build
   run:
@@ -175,8 +175,8 @@ step-electron-chromedriver-build: &step-electron-chromedriver-build
       cd src
       # NOTE(alexeykuzmin): -j3 because chromedriver is currently built
       # on a smaller size machine and ninja mis-detects the number of CPUs available.
-      ninja -C out/Default chrome/test/chromedriver -j3      
-      electron/script/strip-binaries.py --target-cpu $TARGET_ARCH --file $PWD/out/Default/chromedriver
+      ninja -C out/Default chrome/test/chromedriver -j3
+      electron/script/strip-binaries.py --target-cpu="$TARGET_ARCH" --file $PWD/out/Default/chromedriver
       ninja -C out/Default electron:electron_chromedriver_zip
 
 step-electron-chromedriver-store: &step-electron-chromedriver-store
