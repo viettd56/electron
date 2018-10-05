@@ -6,7 +6,6 @@ import sys
 from lib.util import execute, get_out_dir
 
 LINUX_BINARIES_TO_STRIP = [
-  'mksnapshot',
   'electron',
   'libffmpeg.so',
   'libGLESv2.so',

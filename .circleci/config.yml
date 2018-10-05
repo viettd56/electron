@@ -280,6 +280,9 @@ step-mksnapshot-build: &step-mksnapshot-build
     name: mksnapshot build
     command: |
       cd src
+      if [ "`uname`" != "Darwin" ]; then
+        electron/script/strip-binaries.py --file $PWD/out/Default/mksnapshot
+      fi
       # NOTE(jeremy): -j3 because mksnapshot is currently built on a smaller
       # machine size and ninja mis-detects the number of CPUs available.
       ninja -C out/Default electron:electron_mksnapshot_zip -j3
@@ -329,7 +332,7 @@ step-maybe-native-mksnapshot-strip: &step-maybe-native-mksnapshot-strip
     command: |
       if [ "$BUILD_NATIVE_MKSNAPSHOT" == "1" ]; then
         cd src
-        electron/script/strip-binaries.py --file $PWD/out/native_mksnapshot/mksnapshot
+        electron/script/strip-binaries.py --file $PWD/out/native_mksnapshot/mksnapshot --target-cpu="$TARGET_ARCH"
       else
         echo 'Skipping native mksnapshot binary strip'
       fi
