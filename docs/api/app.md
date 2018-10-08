@@ -1115,6 +1115,22 @@ method returns false. If we fail to perform the copy then this method will
 throw an error. The message in the error should be informative and tell
 you exactly what went wrong
 
+### `app.setRemoteRequireHandler(handler)`
+
+* `handler` Function<any> | null
+  * `contents` [`WebContents`](web-contents.md) - The requesting webContents.
+  * `name` String - Module name.
+
+Handles `remote.require` requests. The handler returns the value to be proxied.
+
+### `app.setRemoteGetGlobalHandler(handler)`
+
+* `handler` Function<any> | null
+  * `contents` [`WebContents`](web-contents.md) - The requesting webContents.
+  * `name` String - Variable name.
+
+Handles `remote.getGlobal` requests. The handler returns the value to be proxied.
+
 ### `app.dock.bounce([type])` _macOS_
 
 * `type` String (optional) - Can be `critical` or `informational`. The default is

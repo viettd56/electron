@@ -1,11 +1,16 @@
 'use strict'
 
 const assert = require('assert')
+const chai = require('chai')
+const dirtyChai = require('dirty-chai')
 const path = require('path')
 const { closeWindow } = require('./window-helpers')
 const { resolveGetters } = require('./assert-helpers')
 
-const { remote } = require('electron')
+const { remote, ipcRenderer } = require('electron')
+const { expect } = chai
+
+chai.use(dirtyChai)
 
 const comparePaths = (path1, path2) => {
   if (process.platform === 'win32') {
@@ -483,6 +488,46 @@ describe('remote module', () => {
         assert.ok(error.from)
         assert.deepStrictEqual(error.cause, ...resolveGetters(err))
       }
+    })
+  })
+
+  describe('app.setRemoteRequireHandler()', () => {
+    beforeEach(() => {
+      ipcRenderer.send('set-remote-require-handler', false)
+    })
+
+    afterEach(() => {
+      ipcRenderer.send('set-remote-require-handler', false)
+    })
+
+    it('can return custom values', () => {
+      ipcRenderer.send('set-remote-require-handler', true)
+      expect(remote.require('test')).to.be.equal('Hello World!')
+      expect(() => remote.require('electron')).to.throw('Invalid module: electron')
+    })
+
+    it('can be reset to default', () => {
+      expect(remote.require('electron')).to.be.an('object')
+    })
+  })
+
+  describe('app.setRemoteGetGlobalHandler()', () => {
+    beforeEach(() => {
+      ipcRenderer.send('set-remote-global-handler', false)
+    })
+
+    afterEach(() => {
+      ipcRenderer.send('set-remote-global-handler', false)
+    })
+
+    it('can return custom values', () => {
+      ipcRenderer.send('set-remote-global-handler', true)
+      expect(remote.getGlobal('test')).to.be.equal('Hello World!')
+      expect(() => remote.getGlobal('process')).to.throw('Invalid global: process')
+    })
+
+    it('can be reset to default', () => {
+      expect(remote.getGlobal('process')).to.be.an('object')
     })
   })
 })

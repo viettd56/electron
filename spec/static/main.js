@@ -242,6 +242,30 @@ app.on('ready', function () {
   })
 })
 
+ipcMain.on('set-remote-require-handler', function (event, custom) {
+  const handler = (contents, name) => {
+    if (contents === event.sender && name === 'test') {
+      return 'Hello World!'
+    } else {
+      throw new Error(`Invalid module: ${name}`)
+    }
+  }
+
+  app.setRemoteRequireHandler(custom ? handler : null)
+})
+
+ipcMain.on('set-remote-global-handler', function (event, custom) {
+  const handler = (contents, name) => {
+    if (contents === event.sender && name === 'test') {
+      return 'Hello World!'
+    } else {
+      throw new Error(`Invalid global: ${name}`)
+    }
+  }
+
+  app.setRemoteGetGlobalHandler(custom ? handler : null)
+})
+
 ipcMain.on('set-client-certificate-option', function (event, skip) {
   app.once('select-client-certificate', function (event, webContents, url, list, callback) {
     event.preventDefault()
