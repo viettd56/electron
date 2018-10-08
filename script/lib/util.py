@@ -299,6 +299,7 @@ def make_version(major, minor, patch, pre = None):
 def get_out_dir():
   out_dir = 'Debug'
   override = os.environ.get('ELECTRON_OUT_DIR')
+  print "get_out_dir: override is {0}".format(override)
   if override is not None:
     out_dir = override
   return os.path.join(GN_SRC_DIR, 'out', out_dir)
@@ -309,9 +310,14 @@ def get_dist_dir():
   return os.path.join(get_out_dir(), 'gen', 'electron_dist')
 
 def get_electron_exec():
+  out_dir = get_out_dir()
+  print "get_electron_exec: out_dir is {0}".format(out_dir)
   if sys.platform == 'darwin':
-    return 'out/{0}/Electron.app/Contents/MacOS/Electron'.format(get_out_dir())
+    return 'out/{0}/Electron.app/Contents/MacOS/Electron'.format(out_dir)
   elif sys.platform == 'win32':
-    return 'out/{0}/electron.exe'.format(get_out_dir())
+    return 'out/{0}/electron.exe'.format(out_dir)
   elif sys.platform == 'linux':
-    return 'out/{0}/electron'.format(get_out_dir())
+    return 'out/{0}/electron'.format(out_dir)
+
+  raise Exception(
+      "get_electron_exec: unexpected platform '{0}'".format(sys.platform))

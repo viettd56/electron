@@ -143,6 +143,7 @@ def get_electron_build_version():
     # In CI we just build as told.
     return ELECTRON_VERSION
   electron = get_electron_exec()
+  print "get_electron_build_version(): electron exec is {}".format(electron)
   return subprocess.check_output([electron, '--version']).strip()
 
 
